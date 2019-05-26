@@ -1,15 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // By default the creating channel and typing message are disabled
+    defaultDisable();    
+
     // ******** Current user **************
-    curUsr();
+    disableButton('#userSubmit', '#userInput');
+    document.querySelector('#enterUser').onsubmit = () => {
+        document.querySelector('#channelInput').disabled = false;
+        
+        let currentUser = document.querySelector('#userInput').value;
+        document.querySelector('#currentUser').innerHTML = "Current user: " + currentUser;
+
+        const request = new XMLHttpRequest();
+        request.open('POST', '/current-user');
+
+        request.onload = () => {
+            channels();
+        }
+
+        const data = new FormData();
+        data.append("crUser", currentUser);
+        request.send(data)
+        return false;
+    }
 
     // ********* Chat page *****************
-    channels();
 
     // ********* TEST ***************
 
 
 });
+
+// Disable others
+function defaultDisable() {
+    document.querySelector('#channelInput').disabled = true;
+    document.querySelector('#channelSubmit').disabled = true;
+    document.querySelector('#chatInput').disabled = true;
+    document.querySelector('#chatSubmit').disabled = true;
+}
 
 // Function that gets current user to use for localStorage later
 function curUsr() {
@@ -74,7 +102,16 @@ function getChannels() {
             btn.innerHTML = obj;
             btn.setAttribute('id', obj);
             // Enables button-onclick on the generated channels
-            btn.onclick = function() {openChannel(obj);};         
+            btn.onclick = function() {openChannel(obj);};   
+            
+            // Check if previous localStorage exists
+            let currentUser = document.querySelector('#userInput').value;
+            let userChannel = localStorage.getItem(currentUser);
+            // previous local storage exists
+            if (userChannel !== null) {
+                openChannel(userChannel);
+            }
+            
             document.getElementById('channelList').appendChild(btn);
         })
 
@@ -85,6 +122,11 @@ function getChannels() {
 
 // Function that starts the chat
 function openChannel(chnName) {
+    // Update localStorage onclick
+    userLocalStorage(chnName);
+
+    console.log("CURRENT LOCAL STORAGE");
+    console.log(localStorage)
     // Enable submit button for chat
     document.querySelector('#chatInput').disabled = false;
     disableButton('#chatSubmit', '#chatInput');
@@ -97,25 +139,11 @@ function openChannel(chnName) {
     // Start WebSocket
 }
 
-function channelStorage(chnName) {
-    // Get the userName
-    const request = new XMLHttpRequest();
-    request.open('GET', '/current-user');
-    request.send(null);
-
-    request.onload = () => {
-        const data = JSON.parse(request.responseText);
-        console.log(data)
-        let currentUser = data;
-        
-        // Set the local storage
-        // if (!localStorage.getItem(currentUser)) {
-        //     localStorage.setItem(currentUser, chnName);
-        // } else {
-        //     localStorage.setItem(currentUser, chnName);
-        // }
-    }
+function userLocalStorage(chnName) {
+    let currentUser = document.querySelector('#userInput').value;
+    localStorage.setItem(currentUser, chnName);
 }
+
 
 // ************** HELPER FUNCTIONS **********************
 function clearList(elmName) {

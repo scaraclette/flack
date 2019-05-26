@@ -21,34 +21,16 @@ chatMsg = {"default":[{"user":"alit","msg":"test","time":"now"},{"user":"si","ms
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("chat.html")
 
-@app.route("/chat", methods=["POST", "GET"])
-def chat():
-    global usernames, currentUser
-
-    if request.method == "POST":
-        user = request.form.get("username")
-        if user is not None:
-            user = user.strip()
-            print(len(user) == 0)
-        if user is not None and len(user) != 0:
-            currentUser = user
-            if currentUser not in usernames:
-                usernames.append(currentUser)
-            print("CURRENT USER:", currentUser)
-            return render_template("chat.html", currentUser=currentUser)
-    
-
-    # If there is no user input, redirect to index.html
-    return redirect(url_for('index'))
 
 # Endpoint that returns current available channels
 @app.route("/get-channels", methods=["GET", "POST"])
 def getChannels():
-    global channels
+    global channels, usernames
 
     if request.method == "GET":
+        print(usernames)
         return jsonify(channels)
 
     # If request is post set new channel
@@ -64,6 +46,18 @@ def getChannels():
 @app.route("/current-user", methods=["GET","POST"])
 def current_user():
     global currentUser
-    print("USER TO SEND:", currentUser)
+    print("IM HERE")
+
+    if request.method == "POST":
+        crUser = request.form.get("crUser")
+        print(crUser)
+        if crUser is not None:
+            currentUser = crUser
+            if currentUser not in usernames:
+                usernames.append(currentUser)
+        print(usernames)
+        return jsonify()
+
+    # Get statement returns current user
     return jsonify(currentUser)
 

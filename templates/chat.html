@@ -5,8 +5,14 @@
         <script type="text/javascript" src="{{ url_for('static', filename='chat.js') }}"></script>
         <title>Flack</title>
     </head>
-
+        
+    </div>
     <div>
+        <p>Enter existing user or current user:</p>
+        <form id="enterUser">
+            <input id="userInput" placeholder="username" autocomplete="off">
+            <input id="userSubmit" type="submit">
+        </form>
         <h3 id="currentUser"></h3>
         <!--Put log out button/switch user-->
     </div>
