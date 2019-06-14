@@ -2,7 +2,6 @@
 <html>
     <head>
         <!--Necessary for Flask to read an external JS file-->
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='chat.js') }}"></script>
         <title>Flack</title>
     </head>
@@ -33,13 +32,7 @@
     <!--Show the messages in the channel-->
     <div>
         <h3 id="currentChannel">No channel selected</h3>
-
-        <!--Display messages-->
-        <div>
-            <ol id="messageList"></ol>
-        </div>
-        
-
+        <ol id="messageList"></ol>
         <form id="newChat">
             <input id="chatInput" placeholder="type a message" autocomplete="off" autofocus="on">
             <input id="chatSubmit" type="submit" value="send">
