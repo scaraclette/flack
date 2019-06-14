@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--Necessary for Flask to read an external JS file-->
+        <!--Necessary for Flask to read an external JS file and socket.io-->
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
         <script src="{{ url_for('static', filename='index.js') }}"></script>
         <title>Flack</title>
     </head>
