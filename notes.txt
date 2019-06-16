@@ -1,0 +1,2 @@
+Solved problems
+1. I kept on getting a None when I did request.form.get("chnName) within the flask. It turns out, if the method is specified as 'GET', the data sent is NULL by default. 

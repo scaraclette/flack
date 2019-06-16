@@ -1,16 +1,22 @@
 import os, requests, json
 
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask_session import Session
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 # Variables within Flask memory
 usernames = []
 currentUser = ""
-channels = ["default"]
+channels = ["default", "another default"]
 chatLimit = 5
 
 """
@@ -18,7 +24,7 @@ To access the message dictionary, example want to get userA = "alit"
 userA = chat["default"][0]["user]
 """
 # Messages
-chatMsg = {"default":[{"user":"alit","msg":"test","dateTime":"now"},{"user":"si","msg":"nope","dateTime":"later"}]}
+chatMsg = {"default":[{"user":"alit","msg":"test","dateTime":"now"},{"user":"si","msg":"nope","dateTime":"later"}], "another default":[{"user":"alit","msg":"test","dateTime":"now"}]}
 
 @app.route("/")
 def index():
@@ -48,40 +54,29 @@ def getChannels():
 # Endpoint to get current user
 @app.route("/current-user", methods=["GET","POST"])
 def current_user():
-    global currentUser
+    if session.get("username") is None:
+        print("setting default username")
+        session["username"] = "USER"
 
     if request.method == "POST":
         crUser = request.form.get("crUser")
-        print(crUser)
         if crUser is not None:
-            currentUser = crUser
-            if currentUser not in usernames:
-                usernames.append(currentUser)
-        print(usernames)
-        return jsonify()
+            session["username"] = crUser
+        print(session["username"])
 
     # Get statement returns current user
-    return jsonify(currentUser)
+    return jsonify({"username":session["username"]})
 
 # Endpoint to get and update current chat
 @app.route("/get-chat", methods=["GET"])
 def messages():
     global chatMsg
-
-    # Want to send JSON of received channel name to update on div
-    chnName = request.form.get("chnName")
-    # curChat = chatMsg[chnName]
-    print("**************************")
-    print("CHNNAME:", chnName)
-    # print("curChat:", curChat)
-    print("**************************")
-
-    return "TEST"
+    return jsonify(chatMsg)
 
 # socketIo connection
 @socketio.on("submit chat")
 def chat(data):
-    global chatLimit, chatMsg, currentUser
+    global chatLimit, chatMsg
     chnName = data["chnName"]
     msg = data["msg"]
     dateTime = data["dateTime"]
@@ -91,12 +86,12 @@ def chat(data):
     if len(getChat) == chatLimit:
         print("where here")
         del getChat[0]
-    getChat.append({'user':currentUser, 'msg':msg, 'dateTime':dateTime})
+    getChat.append({'user':session["username"], 'msg':msg, 'dateTime':dateTime})
 
     # DEBUG
     print("******************")
     print("CURRENT GETCHAT", getChat)
-    print("user:", current_user)
+    print("user:", session["username"])
     print("msg:", msg)
     print("dateTime:", dateTime)
     print("******************")

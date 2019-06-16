@@ -45,12 +45,15 @@ function curUsr() {
         document.querySelector('#channelInput').disabled = false;
         
         let currentUser = document.querySelector('#userInput').value;
-        document.querySelector('#currentUser').innerHTML = "Current user: " + currentUser;
 
         const request = new XMLHttpRequest();
         request.open('POST', '/current-user');
 
         request.onload = () => {
+            const data = JSON.parse(request.responseText);
+            document.querySelector('#currentUser').innerHTML = "Current user: " + data["username"];
+
+            // open channels function
             channels();
         }
 
@@ -73,7 +76,7 @@ function channels() {
     // Set the initial stored channels
     getChannels();
 
-    // On submit, send Ajax request
+    // When creating a new channel, send Ajax request
     document.querySelector('#newChannel').onsubmit = () => {
         const request = new XMLHttpRequest();
         request.open('POST', '/get-channels');
@@ -88,6 +91,7 @@ function channels() {
         data.append("newChannel", newChannelInput);
         request.send(data)
 
+        document.getElementById("channelInput").value = "";
         return false;
     };
 
@@ -112,13 +116,7 @@ function getChannels() {
             // Enables button-onclick on the generated channels
             btn.onclick = function() {openChannel(obj);};   
             
-            // Check if previous localStorage exists
-            let currentUser = document.querySelector('#userInput').value;
-            let userChannel = localStorage.getItem(currentUser);
-            // previous local storage exists
-            if (userChannel !== null) {
-                openChannel(userChannel);
-            }
+            // TODO: implement localStorage
             
             document.getElementById('channelList').appendChild(btn);
         })
@@ -131,18 +129,26 @@ function getChannels() {
 // Function that starts the chat
 function openChannel(chnName) {
     // Update localStorage onclick
-    userLocalStorage(chnName);
-    console.log("CURRENT LOCAL STORAGE");
-    console.log(localStorage)
+    // userLocalStorage(chnName);
+    // console.log("CURRENT LOCAL STORAGE");
+    // console.log(localStorage)
+
     // Delete previous messageList items
     deleteMl();
+
+    // Update div for channel name
+    document.querySelector('#currentChannel').innerHTML = "Current channel: " + chnName;
+
     // Get current messages with Ajax requests
     const request = new XMLHttpRequest();
     request.open('GET', '/get-chat')
 
     request.onload = () => {
         const data = JSON.parse(request.responseText);
-        console.log("DATA: " + data);
+        console.log("DATA: " + data[chnName]);
+
+        let currentChat = data[chnName];
+        showChat(currentChat);
     }
 
     const data = new FormData();
@@ -155,8 +161,6 @@ function openChannel(chnName) {
 
     // Function that assigns local storage of user and channel
     // channelStorage(chnName);
-
-    document.querySelector('#currentChannel').innerHTML = "Current channel: " + chnName;
 
     /**
      * SOCKET.IO, want to send {channel name: [user, message, time]}
@@ -178,6 +182,8 @@ function openChannel(chnName) {
 
             // Send message and chnName
             socket.emit('submit chat', {'chnName': chnName, 'msg':msg, 'dateTime':dateTime})
+
+            document.getElementById("chatInput").value = "";
             return false;
         }
     });
@@ -203,6 +209,21 @@ function openChannel(chnName) {
         });
     });
 
+}
+
+function showChat(obj) {
+    // Update message list first
+    let count=1;
+    obj.forEach(function(index) {
+        // Debugging purposes
+        console.log(count + ": " + index['user'] + ": " + index['msg'] + " (" + index['dateTime'] + ")");
+        count++;
+
+        let node = document.createElement('li');
+        let textNode = document.createTextNode(index['user'] + " (" + index['dateTime'] + "): " + index['msg']);
+        node.appendChild(textNode);
+        document.getElementById('messageList').appendChild(node);
+    });
 }
 
 function deleteMl() {
