@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     //Initially, clear storage for debugging. Later create a function
     //Todo: only delete keys that are not available in get channels
-    localStorage.clear();
 
     // By default the creating channel and typing message are disabled
     defaultDisable();    
@@ -53,8 +52,12 @@ function curUsr() {
             const data = JSON.parse(request.responseText);
             document.querySelector('#currentUser').innerHTML = "Current user: " + data["username"];
 
+            // if (localStorage.getItem(data["username"] === null)) {
+            //     localStorage.setItem(data["username"], "default");
+            // }
+
             // open channels function
-            channels();
+            channels(data["username"]);
         }
 
         const data = new FormData();
@@ -66,7 +69,7 @@ function curUsr() {
 }
 
 // Function that creates new channels and shows existing ones
-function channels() {
+function channels(username) {
     // Initially both the submit buttons for new channel and send chat are disabled.
     // send chat will call disableButton function later when a channel is selected
     disableButton('#channelSubmit', '#channelInput')
@@ -74,7 +77,7 @@ function channels() {
     document.querySelector('#chatSubmit').disabled = true;
 
     // Set the initial stored channels
-    getChannels();
+    getChannels(username);
 
     // When creating a new channel, send Ajax request
     document.querySelector('#newChannel').onsubmit = () => {
@@ -83,7 +86,7 @@ function channels() {
 
         let newChannelInput = document.querySelector('#channelInput').value;
         request.onload = () => {
-            getChannels();
+            getChannels(username);
         }
 
         //Send channel
@@ -97,7 +100,7 @@ function channels() {
 
 }
 // Function that gets existing channels from server and updates '#channelList' dynamically
-function getChannels() {
+function getChannels(username) {
     const request = new XMLHttpRequest();
     request.open('GET', '/get-channels');
 
@@ -107,6 +110,17 @@ function getChannels() {
         // Remove previous if channel is updated
         clearList('channelList');
 
+        console.log("BEFORE: " + localStorage);
+        // Delete/Keep items in localStorage
+        for (let i = 0; i < localStorage.length; i++) {
+            let currentItem = localStorage.getItem(localStorage.key(i));
+            if (!data.includes(currentItem)) {
+                localStorage.removeItem(localStorage.key(i));
+                i--;
+            }
+        }
+        console.log("AFTER: " + localStorage);
+
         // Show the list of channel links
         console.log("DATA: " + data[0]);
         data.forEach(function(obj) {
@@ -114,12 +128,15 @@ function getChannels() {
             btn.innerHTML = obj;
             btn.setAttribute('id', obj);
             // Enables button-onclick on the generated channels
-            btn.onclick = function() {openChannel(obj);};   
-            
-            // TODO: implement localStorage
+            btn.onclick = function() {openChannel(obj, username, true);};   
             
             document.getElementById('channelList').appendChild(btn);
-        })
+        });
+
+        // TODO: implement localStorage
+        if (localStorage.getItem(username) !== null) {
+            openChannel(localStorage.getItem(username), username, true);
+        }
 
     }
 
@@ -127,7 +144,7 @@ function getChannels() {
 }
 
 // Function that starts the chat
-function openChannel(chnName) {
+function openChannel(chnName, username, noLocalStorage) {
     // Update localStorage onclick
     // userLocalStorage(chnName);
     // console.log("CURRENT LOCAL STORAGE");
@@ -148,7 +165,9 @@ function openChannel(chnName) {
         console.log("DATA: " + data[chnName]);
 
         let currentChat = data[chnName];
-        showChat(currentChat);
+        if (noLocalStorage) {
+            showChat(currentChat);
+        }
     }
 
     const data = new FormData();
@@ -160,7 +179,7 @@ function openChannel(chnName) {
     disableButton('#chatSubmit', '#chatInput');
 
     // Function that assigns local storage of user and channel
-    // channelStorage(chnName);
+    localStorage.setItem(username, chnName);
 
     /**
      * SOCKET.IO, want to send {channel name: [user, message, time]}
@@ -189,10 +208,11 @@ function openChannel(chnName) {
     });
 
     // When chat is received, update to '#messageList'
-    socket.on('show chat', getChat => {
+    socket.on('show chat', chatMsg => {
         // An example of getting a message value: getChat[0]['msg']
         // For debugging purposes, keep track of count in console
         let count = 1;
+        let getChat = chatMsg[chnName];
         // Delete the contents of messageList first
         deleteMl();
 
