@@ -199,6 +199,7 @@ function openChannel(chnName, username, noLocalStorage) {
             let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
             let dateTime = date + ' ' + time;
 
+            console.log("CHN NAME: " + chnName)
             // Send message and chnName
             socket.emit('submit chat', {'chnName': chnName, 'msg':msg, 'dateTime':dateTime})
 
@@ -208,11 +209,10 @@ function openChannel(chnName, username, noLocalStorage) {
     });
 
     // When chat is received, update to '#messageList'
-    socket.on('show chat', chatMsg => {
+    socket.on('show chat', getChat => {
         // An example of getting a message value: getChat[0]['msg']
         // For debugging purposes, keep track of count in console
         let count = 1;
-        let getChat = chatMsg[chnName];
         // Delete the contents of messageList first
         deleteMl();
 

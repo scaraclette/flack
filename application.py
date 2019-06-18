@@ -16,7 +16,8 @@ socketio = SocketIO(app)
 # Variables within Flask memory
 usernames = []
 currentUser = ""
-channels = ["default", "another default"]
+# channels = ["default", "another default"]
+channels = []
 chatLimit = 5
 
 """
@@ -24,7 +25,8 @@ To access the message dictionary, example want to get userA = "alit"
 userA = chat["default"][0]["user]
 """
 # Messages
-chatMsg = {"default":[{"user":"alit","msg":"test","dateTime":"now"},{"user":"si","msg":"nope","dateTime":"later"}], "another default":[{"user":"alitAnother","msg":"testing12","dateTime":"before"}]}
+# chatMsg = {"default":[{"user":"alit","msg":"test","dateTime":"now"},{"user":"si","msg":"nope","dateTime":"later"}], "another default":[{"user":"alitAnother","msg":"testing12","dateTime":"before"}]}
+chatMsg = {}
 
 @app.route("/")
 def index():
@@ -100,5 +102,5 @@ def chat(data):
     chatMsg[chnName] = getChat
     print(chatMsg)
 
-    emit("show chat", chatMsg, broadcast=True)
+    emit("show chat", getChat, broadcast=True)
 
