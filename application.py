@@ -2,7 +2,7 @@ import os, requests, json
 
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from flask_session import Session
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
 app = Flask(__name__)
 
@@ -17,7 +17,7 @@ socketio = SocketIO(app)
 usernames = []
 currentUser = ""
 # channels = ["default", "another default"]
-channels = []
+channels = ["test", "default", "another default"]
 chatLimit = 5
 
 """
@@ -25,8 +25,8 @@ To access the message dictionary, example want to get userA = "alit"
 userA = chat["default"][0]["user]
 """
 # Messages
-# chatMsg = {"default":[{"user":"alit","msg":"test","dateTime":"now"},{"user":"si","msg":"nope","dateTime":"later"}], "another default":[{"user":"alitAnother","msg":"testing12","dateTime":"before"}]}
-chatMsg = {}
+chatMsg = {"default":[{"user":"alit","msg":"test","dateTime":"now"},{"user":"si","msg":"nope","dateTime":"later"}], "another default":[{"user":"alitAnother","msg":"testing12","dateTime":"before"}], "test":[]}
+
 
 @app.route("/")
 def index():
@@ -69,22 +69,49 @@ def current_user():
     # Get statement returns current user
     return jsonify({"username":session["username"]})
 
+# Endpoint to set user's channel session
+@app.route("/set-channel", methods=["POST"])
+def setChannel():
+    if session.get("room") is None:
+        print("no current channels")
+        session["room"] = None
+
+    if request.method == "POST":
+        session["room"] = request.form.get("chnName")
+        print("CURRENT CHANNEL:", session["room"])
+
+    return jsonify({"chnName":session["chnName"]})
+
 # Endpoint to get and update current chat
 @app.route("/get-chat", methods=["GET"])
 def messages():
     global chatMsg
-    return jsonify(chatMsg)
+    session["room"] = request.form.get("chnName")
+    print("current room", session["room"])
+    currentChannel = chatMsg[session["room"]]
+    return jsonify(currentChannel)
 
 # socketIo connection
 @socketio.on("submit chat")
 def chat(data):
     global chatLimit, chatMsg
-    chnName = data["chnName"]
+
+    # chnName = data["chnName"]
+    chnName = session["room"]
+
+    print("******************")
+    print("DATA[CHNNAME]:", data["chnName"])
+    print("******************")
+    print("CHNNAME:", chnName)
+    print("******************")
     msg = data["msg"]
     dateTime = data["dateTime"]
 
     # Get current channel's chat. Check limit chat to 10 for now. 
     getChat = chatMsg[chnName]
+    print("******************")
+    print("GET CHAT:", getChat)
+    print("******************")
     if len(getChat) == chatLimit:
         print("where here")
         del getChat[0]
@@ -103,4 +130,17 @@ def chat(data):
     print(chatMsg)
 
     emit("show chat", getChat, broadcast=True)
+
+@socketio.on('join')
+def join(data):
+    if session.get("room") is not None:
+        leave_room(session["room"])
+
+    newChn = data["newChn"]
+    join_room(newChn)
+
+    session["room"] = newChn
+    print(session["room"])
+
+    emit('joined_room', {'room':session["room"]})
 
