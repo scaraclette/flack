@@ -148,11 +148,14 @@ function openChannel_1(chnName, username) {
     // Delete previous messageList items
     deleteMl();
     const request = new XMLHttpRequest();
-    request.open('GET', '/set-channel')
+    request.open('POST', '/set-channel')
 
     request.onload = () => {
         const data = JSON.parse(request.responseText);
-        let currentChat = data[chnName];
+        console.log(data)
+        // let currentRoom = data['chnName'];
+        let currentChat = data['chatMsg'];
+        console.log(currentChat)
         showChat(currentChat);
     }
     
@@ -413,7 +416,7 @@ function socketChat(chnName, data) {
     });
 }
 
-function showChat(chnName, data) {
+function showChat(data) {
     // Update message list first
     let count=1;
     data.forEach(function(index) {
@@ -428,7 +431,6 @@ function showChat(chnName, data) {
     });
 
     console.log(data)
-    socketChat(chnName, data)
 }
 
 function deleteMl() {

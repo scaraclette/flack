@@ -72,6 +72,9 @@ def current_user():
 # Endpoint to set user's channel session
 @app.route("/set-channel", methods=["POST"])
 def setChannel():
+
+    global chatMsg
+
     if session.get("room") is None:
         print("no current channels")
         session["room"] = None
@@ -80,7 +83,7 @@ def setChannel():
         session["room"] = request.form.get("chnName")
         print("CURRENT CHANNEL:", session["room"])
 
-    return jsonify({"chnName":session["chnName"]})
+    return jsonify({"chnName":session["room"], "chatMsg":chatMsg[session["room"]]})
 
 # Endpoint to get and update current chat
 @app.route("/get-chat", methods=["GET"])
