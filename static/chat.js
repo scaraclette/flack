@@ -16,19 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// Function that returns messages
-// function testChat() {
-//     const request = new XMLHttpRequest();
-//     request.open('GET', '/chat-msg');
-
-//     request.onload = () => {
-//         const data = JSON.parse(request.responseText);
-//         console.log("data: " + data['default'][0]['user']);
-//     }
-
-//     request.send();
-// }
-
 // Disable others
 function defaultDisable() {
     document.querySelector('#channelInput').disabled = true;
@@ -129,22 +116,19 @@ function getChannels(username) {
             btn.setAttribute('id', obj);
             // Enables button-onclick on the generated channels
             // btn.onclick = function() {openChannel(obj, username, true);}; 
-            btn.onclick = function() {openChannel_1(obj, username)}  
+            btn.onclick = function() {openChannel(obj, username)}  
             
             document.getElementById('channelList').appendChild(btn);
         });
 
         // TODO: implement localStorage
-        // if (localStorage.getItem(username) !== null) {
-        //     openChannel(localStorage.getItem(username), username, true);
-        // }
 
     }
 
     request.send();
 }
 
-function openChannel_1(chnName, username) {
+function openChannel(chnName, username) {
     // Delete previous messageList items
     deleteMl();
     const request = new XMLHttpRequest();
@@ -203,15 +187,20 @@ function openChannel_1(chnName, username) {
         }
 
         // When chat is received, update to '#messageList'
-        socket.on('show chat', getChat => {
+        socket.on('show chat', data => {
             // An example of getting a message value: getChat[0]['msg']
             // For debugging purposes, keep track of count in console
             let count = 1;
             // Delete the contents of messageList first
             deleteMl();
 
+            console.log(data["room"])
+
+            let room = data["room"]
+            let currentChat = data["chatMsg"][room]
+            // console.log(data["chatMsg"])
             // Update message list first
-            getChat.forEach(function(index) {
+            currentChat.forEach(function(index) {
                 // Debugging purposes
                 console.log(count + ": " + index['user'] + ": " + index['msg'] + " (" + index['dateTime'] + ")");
                 count++;
@@ -225,195 +214,6 @@ function openChannel_1(chnName, username) {
     })
 
 
-}
-
-function openChannel_0(chnName, username) {
-
-    // Delete previous messageList itmes
-    deleteMl();
-
-    // Update div for channel name
-    document.querySelector('#currentChannel').innerHTML = "Current channel: " + chnName;
-
-    const request = new XMLHttpRequest();
-    request.open('POST', '/set-channel')
-
-    // Set user's session to specified chnName
-    request.onload = () => {
-        // Returns the chnName
-        const data = JSON.parse(request.responseText);
-        console.log("CURRENT CHANNEL: " + data["chnName"]);
-
-        getMsg(data["chnName"], username);
-    }
-
-    const data = new FormData();
-    data.append("chnName", chnName);
-    request.send(data);
-}
-
-function getMsg(chnName, username) {
-    const request = new XMLHttpRequest();
-    request.open('GET', '/get-chat')
-
-    request.onload = () => {
-        const data = JSON.parse(request.responseText);
-        console.log("DATA: " + data["user"]);
-        showChat(chnName, data)
-    }
-
-    const data = new FormData();
-    data.append("chnName", chnName);
-    request.send(data)
-}
-
-// Function that starts the chat
-function openChannel(chnName, username, noLocalStorage) {
-    // Update localStorage onclick
-    // userLocalStorage(chnName);
-    // console.log("CURRENT LOCAL STORAGE");
-    // console.log(localStorage)
-
-    // Delete previous messageList items
-    deleteMl();
-
-    // Update div for channel name
-    document.querySelector('#currentChannel').innerHTML = "Current channel: " + chnName;
-
-    // Get current messages with Ajax requests
-    const request = new XMLHttpRequest();
-    request.open('GET', '/get-chat')
-
-    request.onload = () => {
-        const data = JSON.parse(request.responseText);
-        console.log("DATA: " + data[chnName]);
-
-        let currentChat = data[chnName];
-        if (noLocalStorage) {
-            showChat(currentChat);
-        }
-    }
-
-    const data = new FormData();
-    data.append("chnName", chnName);
-    request.send(data)
-    
-    // Enable submit button for chat
-    document.querySelector('#chatInput').disabled = false;
-    disableButton('#chatSubmit', '#chatInput');
-
-    // Function that assigns local storage of user and channel
-    localStorage.setItem(username, chnName);
-
-    /**
-     * SOCKET.IO, want to send {channel name: [user, message, time]}
-     */
-    //TODO: Start WebSocket
-    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
-
-    
-    
-
-    // When connected, send message
-    socket.on('connect', () => {
-        document.querySelector('#newChat').onsubmit = () => {
-            let msg = document.querySelector('#chatInput').value;
-            console.log("CURRENT MESSAGE: " + msg);
-
-            // Get current timestamp
-            let today = new Date();
-            let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-            let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-            let dateTime = date + ' ' + time;
-
-            console.log("CHN NAME: " + chnName)
-            // Send message and chnName
-            socket.emit('submit chat', {'chnName': chnName, 'msg':msg, 'dateTime':dateTime})
-
-            document.getElementById("chatInput").value = "";
-            return false;
-        }
-    });
-
-    // When chat is received, update to '#messageList'
-    socket.on('show chat', getChat => {
-        // An example of getting a message value: getChat[0]['msg']
-        // For debugging purposes, keep track of count in console
-        let count = 1;
-        // Delete the contents of messageList first
-        deleteMl();
-
-        // Update message list first
-        getChat.forEach(function(index) {
-            // Debugging purposes
-            console.log(count + ": " + index['user'] + ": " + index['msg'] + " (" + index['dateTime'] + ")");
-            count++;
-
-            let node = document.createElement('li');
-            let textNode = document.createTextNode(index['user'] + " (" + index['dateTime'] + "): " + index['msg']);
-            node.appendChild(textNode);
-            document.getElementById('messageList').appendChild(node);
-        });
-    });
-
-}
-
-function socketChat(chnName, data) {
-
-    // Enable submit button for chat
-    document.querySelector('#chatInput').disabled = false;
-    disableButton('#chatSubmit', '#chatInput');
-
-    console.log("SOCKET CHNNAME: " + chnName)
-
-     /**
-     * SOCKET.IO, want to send {channel name: [user, message, time]}
-     */
-    //TODO: Start WebSocket
-    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
-
-    // When connected, send message
-    socket.on('connect', () => {
-        document.querySelector('#newChat').onsubmit = () => {
-            let msg = document.querySelector('#chatInput').value;
-            console.log("CURRENT MESSAGE: " + msg);
-
-            // Get current timestamp
-            let today = new Date();
-            let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-            let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-            let dateTime = date + ' ' + time;
-
-            console.log("CHN NAME: " + chnName)
-            // Send message and chnName
-            // socket.emit('submit chat', {'chnName': chnName, 'msg':msg, 'dateTime':dateTime})
-            socket.emit('submit chat', {'msg':msg, 'dateTime':dateTime, 'chnName':chnName})
-
-            document.getElementById("chatInput").value = "";
-            return false;
-        }
-    });
-
-    // When chat is received, update to '#messageList'
-    socket.on('show chat', getChat => {
-        // An example of getting a message value: getChat[0]['msg']
-        // For debugging purposes, keep track of count in console
-        let count = 1;
-        // Delete the contents of messageList first
-        deleteMl();
-
-        // Update message list first
-        getChat.forEach(function(index) {
-            // Debugging purposes
-            console.log(count + ": " + index['user'] + ": " + index['msg'] + " (" + index['dateTime'] + ")");
-            count++;
-
-            let node = document.createElement('li');
-            let textNode = document.createTextNode(index['user'] + " (" + index['dateTime'] + "): " + index['msg']);
-            node.appendChild(textNode);
-            document.getElementById('messageList').appendChild(node);
-        });
-    });
 }
 
 function showChat(data) {

@@ -132,7 +132,7 @@ def chat(data):
     chatMsg[chnName] = getChat
     print(chatMsg)
 
-    emit("show chat", getChat, broadcast=True)
+    emit("show chat", {'chatMsg':chatMsg, 'room':session["room"]}, room=session["room"], broadcast=True)
 
 @socketio.on('join')
 def join(data):
