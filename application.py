@@ -14,7 +14,7 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 # Variables within Flask memory
-usernames = []
+usernames = ["alit","si","alitAnother"]
 currentUser = ""
 # channels = ["default", "another default"]
 channels = ["test", "default", "another default"]
@@ -56,6 +56,8 @@ def getChannels():
 # Endpoint to get current user
 @app.route("/current-user", methods=["GET","POST"])
 def current_user():
+    global usernames
+
     if session.get("username") is None:
         print("setting default username")
         session["username"] = "USER"
@@ -64,6 +66,9 @@ def current_user():
         crUser = request.form.get("crUser")
         if crUser is not None:
             session["username"] = crUser
+            if crUser not in usernames:
+                usernames.append(crUser)
+                print("CURRENT USERS:", usernames) # might not have to save in flask memory
         print(session["username"])
 
     # Get statement returns current user

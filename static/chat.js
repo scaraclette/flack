@@ -39,9 +39,9 @@ function curUsr() {
             const data = JSON.parse(request.responseText);
             document.querySelector('#currentUser').innerHTML = "Current user: " + data["username"];
 
-            // if (localStorage.getItem(data["username"] === null)) {
-            //     localStorage.setItem(data["username"], "default");
-            // }
+            if (localStorage.getItem(data["username"] === null)) {
+                localStorage.setItem(data["username"], "default");
+            }
 
             // open channels function
             channels(data["username"]);
@@ -122,6 +122,7 @@ function getChannels(username) {
         });
 
         // TODO: implement localStorage
+
 
     }
 
@@ -230,7 +231,7 @@ function showChat(data) {
         document.getElementById('messageList').appendChild(node);
     });
 
-    console.log(data)
+    // console.log(data)
 }
 
 function deleteMl() {
