@@ -101,29 +101,6 @@ function startChat() {
     socket.emit('submit_chat', {'msg':msg, 'dateTime':dateTime});
 }
 
-function startChat1() {
-
-    document.querySelector('#newChat').onsubmit = () => {
-        let msg = documet.getElementById('chatInput').value;
-        document.getElementById('chatInput').value = '';
-        
-        // Create chat 
-        let today = new Date();
-        let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-        let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        let dateTime = date + ' ' + time;
-
-        socket.emit('submit_chat', {'msg':msg, 'dateTime':dateTime});
-
-        return false;
-    }
-
-    socket.on('live_chat', data => {
-        clearList('messageList');
-        let chat = data['chat']
-        createChat(chat);
-    });
-}
 
 // ************** HELPER FUNCTIONS **********************
 

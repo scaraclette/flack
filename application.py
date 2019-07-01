@@ -42,6 +42,26 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
 
+@app.route("/delete")
+def delete():
+    global usernames, chatMsg
+
+    userToDelete = session['username']
+    for k in chatMsg.keys():
+        currentChn = chatMsg[k]
+
+        for i in currentChn:
+            checkUser = i['user']
+            if checkUser is userToDelete:
+                currentChn.remove(i)
+                print('***DELETED***')
+        
+        chatMsg[k] = currentChn
+
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
+
 @socketio.on('open_channels')
 def openChannels():
     global channels
