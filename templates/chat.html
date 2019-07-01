@@ -24,6 +24,22 @@
             <p>Available Channels</p>
             <div id="channelList"></div>
 
+            <!--Highlights the selected channel-->
+            <p id="selectedChannel"></p>
+
+            <!--Show the messages/chat, TODO: will add a scroll functionality to limit size-->
+            <div>
+                <ol id="messageList"></ol>
+            </div>
+
+            <!--Send new message button-->
+            <div>
+               <form id="newChat">
+                   <input id="chatInput" placeholder="type a message" autocomplete="off" autofocus="on">
+                   <input id="chatSubmit" type="submit" value="send">
+               </form> 
+            </div>
+
         </div>
 
     </div>

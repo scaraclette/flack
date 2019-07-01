@@ -14,10 +14,11 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 # Variables
+chatLimit = 5
 usernames = ["USER"]
 # Create channel 
-channels = ["default"]
-chatMsg = {"default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"later"}]}
+channels = ["default", "another default"]
+chatMsg = {"default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"later"}], "another default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"another default later"}]}
 
 @app.route("/")
 def index():
@@ -59,4 +60,33 @@ def createChannel(data):
         chatMsg.update({newChannel:[]})
         emit('current_channels', {'channels':channels}, broadcast=True)
 
+@socketio.on('set_room')
+def setRoom(data):
+    global chatMsg
 
+    chnName = data['chnName']
+
+    if session.get('room') is not None:
+        leave_room(session['room'])
+
+    session['room'] = chnName
+    join_room(chnName)
+
+    emit('show_message', {'chat':chatMsg[chnName]})
+
+@socketio.on('submit_chat')
+def submitChat(data):
+    global chatLimit, chatMsg
+
+    chnName = session['room']
+    msg = data['msg']
+    dateTime = data['dateTime']
+
+    getChat = chatMsg[chnName]
+    if len(getChat) == chatLimit:
+        del getChat[0]
+    getChat.append({'user':session['username'], 'msg':msg, 'dateTime':dateTime})
+
+    chatMsg[chnName] = getChat
+
+    emit('live_chat', {'chat':getChat}, room=session['room'], broadcast=True)
