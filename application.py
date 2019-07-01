@@ -1,6 +1,6 @@
 import os, requests, json
 
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask import Flask, redirect, render_template, jsonify, request, redirect, url_for, session
 from flask_session import Session
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
@@ -13,142 +13,50 @@ Session(app)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
-# Variables within Flask memory
-usernames = ["alit","si","alitAnother"]
-currentUser = ""
-# channels = ["default", "another default"]
-channels = ["test", "default", "another default"]
-chatLimit = 5
-
-"""
-To access the message dictionary, example want to get userA = "alit"
-userA = chat["default"][0]["user]
-"""
-# Messages
-chatMsg = {"default":[{"user":"alit","msg":"test","dateTime":"now"},{"user":"si","msg":"nope","dateTime":"later"}], "another default":[{"user":"alitAnother","msg":"testing12","dateTime":"before"}], "test":[]}
-
+# Variables
+usernames = ["USER"]
+# Create channel 
+channels = ["default"]
+chatMsg = {"default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"later"}]}
 
 @app.route("/")
 def index():
-    return render_template("chat.html")
+    return render_template("login.html")
 
-
-# Endpoint that returns current available channels
-@app.route("/get-channels", methods=["GET", "POST"])
-def getChannels():
-    global channels, usernames
-
-    if request.method == "GET":
-        print(usernames)
-        return jsonify(channels)
-
-    # If request is POST, set new channel
-    newChannel = request.form.get("newChannel")
-    if newChannel is not None:
-        newChannel = newChannel.strip().lower()
-    # Add new channel both to channel names and chatMsg
-    if newChannel not in channels:
-        channels.append(newChannel)    
-        chatMsg.update({newChannel:[]})
-
-    return jsonify(channels)
-
-# Endpoint to get current user
-@app.route("/current-user", methods=["GET","POST"])
-def current_user():
+@app.route("/login", methods=["GET", "POST"])
+def login():
     global usernames
 
-    if session.get("username") is None:
-        print("setting default username")
-        session["username"] = "USER"
+    currentUser = request.form.get("usernameInput")
+    if currentUser is None:
+        return "ENTER USERNAME"
+    session["username"] = currentUser
+    if currentUser not in usernames:
+        usernames.append(currentUser)
+        
+    return render_template("chat.html", user=session["username"])
 
-    if request.method == "POST":
-        crUser = request.form.get("crUser")
-        if crUser is not None:
-            session["username"] = crUser
-            if crUser not in usernames:
-                usernames.append(crUser)
-                print("CURRENT USERS:", usernames) # might not have to save in flask memory
-        print(session["username"])
+@app.route("/logout")
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('index'))
 
-    # Get statement returns current user
-    return jsonify({"username":session["username"]})
+@socketio.on('open_channels')
+def openChannels():
+    global channels
+    emit('current_channels', {'channels':channels}, broadcast=True)
 
-# Endpoint to set user's channel session
-@app.route("/set-channel", methods=["POST"])
-def setChannel():
+@socketio.on('create_channel')
+def createChannel(data):
+    global channels, chatMsg
+    newChannel = data['newChannel']
 
-    global chatMsg
+    # if newChannel exists, emit error message
+    if newChannel in channels:
+        emit('channel_exists', {'msg':'channel already exists!'})
+    else:
+        channels.append(newChannel)
+        chatMsg.update({newChannel:[]})
+        emit('current_channels', {'channels':channels}, broadcast=True)
 
-    if session.get("room") is None:
-        print("no current channels")
-        session["room"] = None
-
-    if request.method == "POST":
-        session["room"] = request.form.get("chnName")
-        print("CURRENT CHANNEL:", session["room"])
-
-    return jsonify({"chnName":session["room"], "chatMsg":chatMsg[session["room"]]})
-
-# Endpoint to get and update current chat
-@app.route("/get-chat", methods=["GET"])
-def messages():
-    global chatMsg
-    session["room"] = request.form.get("chnName")
-    print("current room", session["room"])
-    currentChannel = chatMsg[session["room"]]
-    return jsonify(currentChannel)
-
-# socketIo connection
-@socketio.on("submit chat")
-def chat(data):
-    global chatLimit, chatMsg
-
-    # chnName = data["chnName"]
-    chnName = session["room"]
-
-    print("******************")
-    print("DATA[CHNNAME]:", data["chnName"])
-    print("******************")
-    print("CHNNAME:", chnName)
-    print("******************")
-    msg = data["msg"]
-    dateTime = data["dateTime"]
-
-    # Get current channel's chat. Check limit chat to 10 for now. 
-    getChat = chatMsg[chnName]
-    print("******************")
-    print("GET CHAT:", getChat)
-    print("******************")
-    if len(getChat) == chatLimit:
-        print("where here")
-        del getChat[0]
-    getChat.append({'user':session["username"], 'msg':msg, 'dateTime':dateTime})
-
-    # DEBUG
-    print("******************")
-    print("CURRENT GETCHAT", getChat)
-    print("user:", session["username"])
-    print("msg:", msg)
-    print("dateTime:", dateTime)
-    print("******************")
-
-    # Update the key's value
-    chatMsg[chnName] = getChat
-    print(chatMsg)
-
-    emit("show chat", {'chatMsg':chatMsg, 'room':session["room"]}, room=session["room"], broadcast=True)
-
-@socketio.on('join')
-def join(data):
-    if session.get("room") is not None:
-        leave_room(session["room"])
-
-    newChn = data["newChn"]
-    join_room(newChn)
-
-    session["room"] = newChn
-    print(session["room"])
-
-    emit('joined_room', {'room':session["room"]})
 

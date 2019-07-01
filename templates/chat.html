@@ -6,44 +6,25 @@
         <script type="text/javascript" src="{{ url_for('static', filename='chat.js') }}"></script>
         <title>Flack</title>
     </head>
-        
-    </div>
-    <div>
-        <p>Enter existing user or current user:</p>
-        <form id="enterUser">
-            <input id="userInput" placeholder="username" autocomplete="off">
-            <input id="userSubmit" type="submit">
-        </form>
-        <h3 id="currentUser"></h3>
-        <!--Put log out button/switch user-->
-    </div>
 
-    <!--Create Channel and Channel Display-->
     <div>
-        <p>Create new channel or select existing</p>
-        <form id="newChannel" method="post">
-            <input id="channelInput" placeholder="create new" autocomplete="off">
-            <input id="channelSubmit" type="submit">
+        <h4>Welcome {{user}}!</h4>
+
+        <form action="{{ url_for('logout') }}">
+            <button>logout</button>
         </form>
 
-        <p>Available Channels</p>
-        <div id="channelList"></div>
-    </div>
-
-    <!--Show the messages in the channel-->
-    <div>
-        <h3 id="currentChannel">No channel selected</h3>
-
-        <!--Display messages-->
         <div>
-            <ol id="messageList"></ol>
+            <p>Create new channel or select existing</p>
+            <form id="newChannel" method="post">
+                <input id="channelInput" placeholder="create new" autocomplete="off">
+                <input id="channelSubmit" type="submit">
+            </form>
+
+            <p>Available Channels</p>
+            <div id="channelList"></div>
+
         </div>
-        
 
-        <form id="newChat">
-            <input id="chatInput" placeholder="type a message" autocomplete="off" autofocus="on">
-            <input id="chatSubmit" type="submit" value="send">
-        </form>
     </div>
-
 </html>
