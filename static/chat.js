@@ -2,6 +2,9 @@ var socket = io.connect(location.protocol + '//' + document.domain + ':' + locat
 
 document.addEventListener('DOMContentLoaded', () => {
     channelList();
+
+    // By default create channel button is disabled
+    disableButton('channelSubmit', 'channelInput');
 });
 
 function channelList() {
@@ -9,7 +12,8 @@ function channelList() {
 
     document.querySelector('#newChannel').onsubmit = () => {
         let newChannel = document.querySelector('#channelInput').value;
-        document.querySelector('#channelInput').value = '';
+        document.getElementById('channelInput').value = '';
+        disableButton('channelSubmit', 'channelInput');
         socket.emit('create_channel', {'newChannel':newChannel})
         return false;
     }
@@ -44,5 +48,19 @@ function clearList(elmName) {
     let listNode = document.getElementById(elmName);
     while(listNode.firstChild) {
         listNode.removeChild(listNode.firstChild);
+    }
+}
+
+function disableButton(submitId, formId) {
+    document.getElementById(submitId).disabled = true;
+    // To prevent empty userInput
+    document.getElementById(formId).onkeyup = () => {
+        let userInput = document.getElementById(formId).value;
+        userInput = userInput.replace(/\s+/g, '');
+        if (userInput.length > 0) {
+            document.getElementById(submitId).disabled = false;
+        } else {
+            document.getElementById(submitId).disabled = true;
+        }
     }
 }
