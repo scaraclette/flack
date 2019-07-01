@@ -45,7 +45,7 @@ def logout():
 @socketio.on('open_channels')
 def openChannels():
     global channels
-    emit('current_channels', {'channels':channels}, broadcast=True)
+    emit('current_channels', {'channels':channels, 'currentUser':session["username"]}, broadcast=True)
 
 @socketio.on('create_channel')
 def createChannel(data):

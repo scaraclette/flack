@@ -23,6 +23,16 @@ function channelList() {
 
     socket.on('current_channels', data => {
         let channels = data['channels']
+        let currentUser = data['currentUser']
+
+        // Clear previous localStorages
+        for (let i = 0; i < localStorage.length; i++) {
+            let currentItem = localStorage.getItem(localStorage.key(i));
+            if (!channels.includes(currentItem)) {
+                localStorage.removeItem(localStorage.key(i));
+                i--;
+            }
+        }
 
         // Clears previous channel list
         clearList('channelList');
@@ -31,9 +41,14 @@ function channelList() {
             let btn = document.createElement('button');
             btn.innerHTML = obj;
             btn.setAttribute('id', obj);
-            btn.onclick = function() {openChannel(obj)};
+            btn.onclick = function() {openChannel(obj, currentUser)};
             document.getElementById('channelList').appendChild(btn);
-        })
+        });
+
+        if (localStorage.getItem(currentUser) !== null) {
+            let toOpen = localStorage.getItem(currentUser);
+            openChannel(toOpen);
+        }
     });
 
     socket.on('channel_exists', data => {
@@ -42,7 +57,10 @@ function channelList() {
     })
 };
 
-function openChannel(chnName) {
+function openChannel(chnName, currentUser) {
+
+    localStorage.setItem(currentUser, chnName);
+
     console.log(chnName);
     document.getElementById('selectedChannel').innerHTML = '<b>' + chnName + '</b>'
 
