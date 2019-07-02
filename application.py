@@ -20,6 +20,10 @@ usernames = ["USER"]
 channels = ["default", "another default"]
 chatMsg = {"default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"later"}], "another default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"another default later"}]}
 
+@app.route("/check")
+def check():
+    return jsonify({"currentUser":session['username']})
+
 @app.route("/")
 def index():
     return render_template("login.html")
@@ -78,7 +82,7 @@ def createChannel(data):
     else:
         channels.append(newChannel)
         chatMsg.update({newChannel:[]})
-        emit('current_channels', {'channels':channels}, broadcast=True)
+        emit('current_channels', {'channels':channels, 'currentUser':session["username"]}, broadcast=True)
 
 @socketio.on('set_room')
 def setRoom(data):

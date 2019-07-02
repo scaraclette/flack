@@ -7,6 +7,20 @@ document.addEventListener('DOMContentLoaded', () => {
     disableButton('channelSubmit', 'channelInput');
     document.getElementById('chatInput').disabled = true;
     document.getElementById('chatSubmit').disabled = true;
+
+    document.querySelector('#checkSession').onsubmit = () => {
+        const request = new XMLHttpRequest();
+        request.open('GET', '/check');
+
+        request.onload = () => {
+            const data = JSON.parse(request.responseText);
+            let curUser = data['currentUser']
+            document.querySelector('#currentSession').innerHTML = curUser;
+        }
+
+        request.send();
+        return false;
+    }
     
 });
 
@@ -24,6 +38,7 @@ function channelList() {
     socket.on('current_channels', data => {
         let channels = data['channels']
         let currentUser = data['currentUser']
+        console.log("CURRENT USER: " + currentUser);
 
         // Clear previous localStorages
         for (let i = 0; i < localStorage.length; i++) {
