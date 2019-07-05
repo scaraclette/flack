@@ -1,7 +1,7 @@
 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
 document.addEventListener('DOMContentLoaded', () => {
-    channelList();
+    deleteLocal();
 
     // By default create channel button is disabled
     disableButton('channelSubmit', 'channelInput');
@@ -24,6 +24,31 @@ document.addEventListener('DOMContentLoaded', () => {
     
 });
 
+function deleteLocal() {
+     const request = new XMLHttpRequest();
+        request.open('GET', '/get-channels');
+
+        request.onload = () => {
+            const data = JSON.parse(request.responseText);
+            let channels = data['channels']
+            
+            // Clear previous localStorages
+            for (let i = 0; i < localStorage.length; i++) {
+                let currentItem = localStorage.getItem(localStorage.key(i));
+                if (!channels.includes(currentItem)) {
+                    localStorage.removeItem(localStorage.key(i));
+                    i--;
+                }
+            }
+
+            channelList();
+            
+        }
+
+    request.send();
+    return false;
+}
+
 function channelList() {
     socket.emit('open_channels');
 
@@ -38,7 +63,6 @@ function channelList() {
     socket.on('current_channels', data => {
         let channels = data['channels']
         let currentUser = data['currentUser']
-        console.log("CURRENT USER: " + currentUser);
 
         // Clear previous localStorages
         for (let i = 0; i < localStorage.length; i++) {
@@ -60,17 +84,33 @@ function channelList() {
             document.getElementById('channelList').appendChild(btn);
         });
 
-        if (localStorage.getItem(currentUser) !== null) {
-            let toOpen = localStorage.getItem(currentUser);
-            openChannel(toOpen);
-        }
     });
+
+    openLocal();
 
     socket.on('channel_exists', data => {
         let message = data['msg'];
         alert(message);
     })
 };
+
+function openLocal() {
+    const request = new XMLHttpRequest();
+    request.open('GET', '/check');
+
+    request.onload = () => {
+        const data = JSON.parse(request.responseText);
+        let curUser = data['currentUser']
+        // document.querySelector('#currentSession').innerHTML = curUser;
+        if (localStorage.getItem(curUser) !== null) {
+            let toOpen = localStorage.getItem(curUser);
+            openChannel(toOpen);
+        }
+    }
+
+    request.send();
+    return false;
+}
 
 function openChannel(chnName, currentUser) {
 

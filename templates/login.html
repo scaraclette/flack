@@ -11,7 +11,7 @@
         <h4>Welcome to Flack</h4>
         <p>Create username or input existing</p>
         <form action="{{ url_for('login') }}" method="post">
-            <input name="usernameInput" type="text" placeholder="enter username...">
+            <input name="usernameInput" type="text" autocomplete="off" placeholder="enter username...">
             <button>Submit</button>
         </form>
     </div>

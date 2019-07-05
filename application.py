@@ -17,12 +17,19 @@ socketio = SocketIO(app)
 chatLimit = 5
 usernames = ["USER"]
 # Create channel 
-channels = ["default", "another default"]
-chatMsg = {"default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"later"}], "another default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"another default later"}]}
+# channels = ["default", "another default"]
+# chatMsg = {"default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"later"}], "another default":[{"user":"USER", "msg":"test", "dateTime":"now"}, {"user":"USER", "msg":"another test", "dateTime":"another default later"}]}
+chatMsg = {}
+channels = []
 
 @app.route("/check")
 def check():
     return jsonify({"currentUser":session['username']})
+
+@app.route("/get-channels")
+def getChannels():
+    global channels
+    return jsonify({"channels":channels})
 
 @app.route("/")
 def index():
@@ -51,16 +58,52 @@ def delete():
     global usernames, chatMsg
 
     userToDelete = session['username']
+
+    print("*********PREVIOUS************")
+    print(chatMsg)
+
     for k in chatMsg.keys():
         currentChn = chatMsg[k]
+        # print(len(currentChn))
+        print("BEFORE:")
+
+        newChat = []
 
         for i in currentChn:
+            print(i)
             checkUser = i['user']
-            if checkUser is userToDelete:
-                currentChn.remove(i)
-                print('***DELETED***')
+            if checkUser != userToDelete:
+                newChat.append(i)
+
+        print("AFTER:")
+        print(newChat)
+
+        chatMsg[k] = newChat
+
+    # userToDelete = session['username']
+
+    # for k in chatMsg.keys():
+    #     print("HERE")
+    #     currentChn = chatMsg[k]
+
+    #     for i in range(0, len(currentChn)):
+    #         print("index:", i)
+    #         checkUser = currentChn[i]['user']
+    #         print("checkUser:", checkUser)
+    #         print("userToDelete:", userToDelete)
+
+    #         if checkUser == userToDelete:
+    #             print("gonna delete.")
+    #             popped = currentChn.pop(i)
+    #             print("popped:", popped)
+    #             # if i != 0:
+    #             # i = i-1
+    #             print('***DELETED***')
         
-        chatMsg[k] = currentChn
+    #     chatMsg[k] = currentChn
+
+    print("**********AFTER**************")
+    print(chatMsg)
 
     session.pop('username', None)
     return redirect(url_for('index'))
