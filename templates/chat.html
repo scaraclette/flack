@@ -1,59 +1,110 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--Necessary for Flask to read an external JS file-->
+        <!--Necessary for Flask to read an external CSS or JS file-->
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='chat.js') }}"></script>
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='chat.css') }}">
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <style>
+            #top-space {
+                background-color: #cffaed;
+                height: 90px;
+            }
+            #bottom-space {
+                background-color: #cffaed;
+                height: 90px;
+            }
+            #left-part {
+                background-color: #c1cfe6; 
+                height: 500px;
+                width:250px;
+            }
+            #right-part {
+                background-color: #eee1fc;
+                height: 500px;
+            }
+
+            
+        </style>
+
         <title>Flack</title>
     </head>
 
-    <div>
-        <h4>Welcome {{user}}!</h4>
+    <body>
 
-        <form action="{{ url_for('logout') }}">
-            <button>logout</button>
-        </form>
+        <div id="top-space"></div>
 
-        <div>
-            <p>Create new channel or select existing</p>
-            <form id="newChannel" method="post">
-                <input id="channelInput" placeholder="create new" autocomplete="off">
-                <input id="channelSubmit" type="submit">
-            </form>
+        <div class="container">
 
-            <!--Lists available channels-->
-            <div>
-                <p>Available Channels</p>
-                <div id="channelList"></div>
+            <div class="row">
+                <div id="left-part" class="col-sm-4">
+                    <h4>Welcome {{user}}!</h4>
+                    <form action="{{ url_for('logout') }}">
+                        <button>logout</button>
+                    </form>
+                    <p>Create new channel or select existing</p>
+                    <form id="newChannel" method="post">
+                        <input id="channelInput" placeholder="create new" autocomplete="off">
+                        <input id="channelSubmit" type="submit">
+                    </form>
+
+                    <!--Lists available channels-->
+                    <div>
+                        <p>Available Channels</p>
+                        <div id="channelList"></div>
+                    </div>
+                </div>
+                
+
+                <div id="right-part" class="col-sm-8">
+                    <!--Highlights the selected channel-->
+                    <p id="selectedChannel"></p>
+
+                    <!--Show the messages/chat, TODO: will add a scroll functionality to limit size-->
+                    <div>
+                        <ol id="messageList"></ol>
+                    </div>
+
+                    <!--Send new message button-->
+                    <div>
+                        <form id="newChat">
+                            <input id="chatInput" placeholder="type a message" autocomplete="off" autofocus="on">
+                            <input id="chatSubmit" type="submit" value="send">
+                        </form> 
+                    </div>
+
+                    <!--Delete account button-->
+                    <form action="{{ url_for('delete') }}">
+                        <button>Delete account</button>
+                    </form>
+
+                    <!-- <form id="checkSession">
+                        <button>Check session</button>
+                        <div id="currentSession"></div>
+                    </form> -->
+                </div>
+
             </div>
-
-            <!--Highlights the selected channel-->
-            <p id="selectedChannel"></p>
-
-            <!--Show the messages/chat, TODO: will add a scroll functionality to limit size-->
-            <div>
-                <ol id="messageList"></ol>
-            </div>
-
-            <!--Send new message button-->
-            <div>
-               <form id="newChat">
-                   <input id="chatInput" placeholder="type a message" autocomplete="off" autofocus="on">
-                   <input id="chatSubmit" type="submit" value="send">
-               </form> 
-            </div>
-
-            <!--Delete account button-->
-            <form action="{{ url_for('delete') }}">
-                <button>Delete account</button>
-            </form>
 
         </div>
 
-        <form id="checkSession">
-                <button>Check session</button>
-                <div id="currentSession"></div>
-            </form>
+        <div id="bottom-space"></div>
 
-    </div>
+        <!-- Optional JavaScript -->
+            <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    </body>
+
+
 </html>

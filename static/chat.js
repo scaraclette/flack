@@ -8,19 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chatInput').disabled = true;
     document.getElementById('chatSubmit').disabled = true;
 
-    document.querySelector('#checkSession').onsubmit = () => {
-        const request = new XMLHttpRequest();
-        request.open('GET', '/check');
+    // document.querySelector('#checkSession').onsubmit = () => {
+    //     const request = new XMLHttpRequest();
+    //     request.open('GET', '/check');
 
-        request.onload = () => {
-            const data = JSON.parse(request.responseText);
-            let curUser = data['currentUser']
-            document.querySelector('#currentSession').innerHTML = curUser;
-        }
+    //     request.onload = () => {
+    //         const data = JSON.parse(request.responseText);
+    //         let curUser = data['currentUser']
+    //         document.querySelector('#currentSession').innerHTML = curUser;
+    //     }
 
-        request.send();
-        return false;
-    }
+    //     request.send();
+    //     return false;
+    // }
     
 });
 

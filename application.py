@@ -14,7 +14,7 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 # Variables
-chatLimit = 5
+chatLimit = 100
 usernames = ["USER"]
 # Create channel 
 # channels = ["default", "another default"]
