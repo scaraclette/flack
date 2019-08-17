@@ -5,8 +5,8 @@ Using Flask's SocketIO, this web application allows users across browsers to cre
 
 ## Features
 
-    <li>With the use of JavaScript's LocalStorage, existing users upon logging in will have their previous opened channel by default.</li>
-    <li>Users are able to delete themselves where the app will delete all their previous messages</li>
+* With the use of JavaScript's LocalStorage, existing users upon logging in will have their previous opened channel by default.
+* Users are able to delete themselves where the app will delete all their previous messages.
 
 ## Installing
 On working directory
@@ -16,6 +16,6 @@ $ flask run
 ```
 
 ## Required
-    <li>Python3</li>
-    <li>Flask</li>
-    <li>Flask SocketIO</li>
+   * Python3
+   * Flask
+   * Flask SocketIO
